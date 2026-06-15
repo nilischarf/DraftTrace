@@ -36,3 +36,20 @@ export async function createReport(payload) {
 
   return response.json();
 }
+
+export async function probeRevisionSnapshots(payload) {
+  const response = await fetch(`${API_BASE_URL}/debug/revision-snapshots`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => null);
+    throw new Error(error?.detail ?? "Could not test revision snapshots.");
+  }
+
+  return response.json();
+}

@@ -8,7 +8,7 @@ import {
   Unplug,
 } from "lucide-react";
 
-import { createReport, getGoogleStatus, startGoogleAuth } from "./api";
+import { createReport, getGoogleStatus, probeRevisionSnapshots, startGoogleAuth } from "./api";
 
 const initialForm = {
   student_name: "Maya Cohen",
@@ -28,6 +28,8 @@ function App() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [googleStatus, setGoogleStatus] = useState(null);
+  const [snapshotProbe, setSnapshotProbe] = useState(null);
+  const [isProbingSnapshots, setIsProbingSnapshots] = useState(false);
 
   useEffect(() => {
     refreshGoogleStatus();
@@ -70,6 +72,29 @@ function App() {
       setError(nextError.message);
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  async function handleSnapshotProbe() {
+    setError("");
+
+    if (!googleStatus?.connected) {
+      setError("Connect Google before testing revision snapshots.");
+      return;
+    }
+
+    setIsProbingSnapshots(true);
+
+    try {
+      const nextProbe = await probeRevisionSnapshots({
+        document_url: form.document_url,
+        max_revisions: 8,
+      });
+      setSnapshotProbe(nextProbe);
+    } catch (nextError) {
+      setError(nextError.message);
+    } finally {
+      setIsProbingSnapshots(false);
     }
   }
 
@@ -148,14 +173,75 @@ function App() {
             Generate report
           </button>
 
+          <button
+            className="secondary-button"
+            type="button"
+            disabled={isProbingSnapshots}
+            onClick={handleSnapshotProbe}
+          >
+            {isProbingSnapshots ? <Loader2 className="spin" size={18} /> : <FileText size={18} />}
+            Test revision snapshots
+          </button>
+
           {error ? <p className="error">{error}</p> : null}
         </form>
 
         <section className="report-panel">
+          {snapshotProbe ? <SnapshotProbe probe={snapshotProbe} /> : null}
           {report ? <Report report={report} /> : <EmptyReport />}
         </section>
       </section>
     </main>
+  );
+}
+
+function SnapshotProbe({ probe }) {
+  return (
+    <div className="snapshot-probe">
+      <div className="report-header">
+        <div>
+          <p className="eyebrow">Revision snapshot spike</p>
+          <h2>{probe.document.name}</h2>
+          <p>{probe.note}</p>
+        </div>
+        <div className={`status ${probe.snapshot_available ? "low_concern" : "needs_review"}`}>
+          {probe.snapshot_available ? "Snapshots found" : "No snapshots"}
+        </div>
+      </div>
+
+      <div className="metrics-grid compact">
+        <div className="metric">
+          <span>total revisions</span>
+          <strong>{probe.revision_count}</strong>
+        </div>
+        <div className="metric">
+          <span>sampled revisions</span>
+          <strong>{probe.sampled_revision_count}</strong>
+        </div>
+        <div className="metric">
+          <span>successful snapshots</span>
+          <strong>{probe.successful_snapshot_count}</strong>
+        </div>
+        <div className="metric">
+          <span>largest word delta</span>
+          <strong>{probe.largest_word_count_delta}</strong>
+        </div>
+      </div>
+
+      <ol className="snapshot-list">
+        {probe.snapshots.map((snapshot) => (
+          <li key={snapshot.revision_id}>
+            <strong>Revision {snapshot.revision_id}</strong>
+            <span>{snapshot.modified_time ?? "Unknown time"}</span>
+            <p>
+              {snapshot.available
+                ? `${snapshot.word_count} words, ${snapshot.character_count} characters`
+                : snapshot.reason}
+            </p>
+          </li>
+        ))}
+      </ol>
+    </div>
   );
 }
 

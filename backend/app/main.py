@@ -4,8 +4,8 @@ from fastapi.responses import RedirectResponse
 from dotenv import load_dotenv
 
 from app.google_auth import create_authorization_url, exchange_code_for_token, frontend_url, google_status
-from app.google_drive import fetch_google_doc_metadata
-from app.models import AuthorshipReport, SubmissionRequest
+from app.google_drive import fetch_google_doc_metadata, probe_revision_snapshots
+from app.models import AuthorshipReport, SnapshotProbeRequest, SubmissionRequest
 from app.report_service import create_mock_report
 
 load_dotenv()
@@ -46,3 +46,11 @@ def google_auth_callback(code: str, state: str = ""):
 def create_report(submission: SubmissionRequest):
     google_document = fetch_google_doc_metadata(submission.document_url)
     return create_mock_report(submission, google_document=google_document)
+
+
+@app.post("/debug/revision-snapshots")
+def debug_revision_snapshots(request: SnapshotProbeRequest):
+    return probe_revision_snapshots(
+        document_url=request.document_url,
+        max_revisions=request.max_revisions,
+    )

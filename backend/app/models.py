@@ -9,6 +9,11 @@ class SubmissionRequest(BaseModel):
     assignment_name: str = Field(..., min_length=1)
 
 
+class SnapshotProbeRequest(BaseModel):
+    document_url: str = Field(..., min_length=1)
+    max_revisions: int = Field(default=8, ge=1, le=20)
+
+
 class TimelineEvent(BaseModel):
     time: str
     label: str

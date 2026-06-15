@@ -93,6 +93,19 @@ The product should avoid saying "AI detected." Instead, reports should show auth
 - missing or insufficient evidence
 - teacher review recommendation
 
+## Revision Snapshot Spike
+
+After connecting Google, the frontend includes a **Test revision snapshots** button.
+It calls:
+
+```text
+POST /debug/revision-snapshots
+```
+
+The endpoint samples up to 8 Google Drive revisions and attempts to export each
+historical revision as `text/plain`. It returns only metadata, word counts, and
+character counts; it does not return document text.
+
 ## Next Technical Milestones
 
 1. Add Google OAuth.
