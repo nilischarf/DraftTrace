@@ -153,6 +153,14 @@ button {
   padding: 13px 16px;
 }
 
+.secondary-button {
+  background: #ffffff;
+  border: 1px solid #cbd5dc;
+  color: #172026;
+  padding: 10px 12px;
+  white-space: nowrap;
+}
+
 button:disabled {
   cursor: wait;
   opacity: 0.7;
@@ -172,6 +180,23 @@ button:disabled {
   color: #b42318;
   font-weight: 700;
   margin-bottom: 0;
+}
+
+.google-box {
+  align-items: center;
+  background: #f6f8fa;
+  border: 1px solid #e2e8ec;
+  border-radius: 8px;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+  padding: 14px;
+}
+
+.google-box p {
+  color: #51606a;
+  font-size: 0.86rem;
+  margin: 4px 0 0;
 }
 
 .report-panel {
@@ -350,5 +375,10 @@ button:disabled {
   .score-row,
   .metrics-grid {
     grid-template-columns: 1fr;
+  }
+
+  .google-box {
+    align-items: stretch;
+    flex-direction: column;
   }
 }

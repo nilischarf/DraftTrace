@@ -52,6 +52,36 @@ npm run dev
 
 Then open the frontend URL printed by Vite, usually `http://localhost:5173`.
 
+## Google OAuth Setup
+
+Create a Google Cloud project, then:
+
+1. Enable the Google Drive API.
+2. Enable the Google Docs API.
+3. Create an OAuth Client ID for a web application.
+4. Add this authorized redirect URI:
+
+```text
+http://localhost:8000/auth/google/callback
+```
+
+Then create `backend/.env` from the example:
+
+```bash
+cp backend/.env.example backend/.env
+```
+
+Fill in:
+
+```text
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=http://localhost:8000/auth/google/callback
+FRONTEND_URL=http://localhost:5173
+```
+
+Restart the backend after editing `.env`.
+
 ## Product Direction
 
 The product should avoid saying "AI detected." Instead, reports should show authorship evidence:

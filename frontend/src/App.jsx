@@ -1,7 +1,14 @@
-import { useState } from "react";
-import { AlertTriangle, CheckCircle2, FileText, Loader2, ShieldCheck } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  FileText,
+  Loader2,
+  ShieldCheck,
+  Unplug,
+} from "lucide-react";
 
-import { createReport } from "./api";
+import { createReport, getGoogleStatus, startGoogleAuth } from "./api";
 
 const initialForm = {
   student_name: "Maya Cohen",
@@ -20,10 +27,40 @@ function App() {
   const [report, setReport] = useState(null);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [googleStatus, setGoogleStatus] = useState(null);
+
+  useEffect(() => {
+    refreshGoogleStatus();
+  }, []);
+
+  async function refreshGoogleStatus() {
+    try {
+      setGoogleStatus(await getGoogleStatus());
+    } catch (nextError) {
+      setError(nextError.message);
+    }
+  }
+
+  async function handleConnectGoogle() {
+    setError("");
+
+    try {
+      const { authorization_url } = await startGoogleAuth();
+      window.location.href = authorization_url;
+    } catch (nextError) {
+      setError(nextError.message);
+    }
+  }
 
   async function handleSubmit(event) {
     event.preventDefault();
     setError("");
+
+    if (!googleStatus?.connected) {
+      setError("Connect Google before generating a real document report.");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -61,6 +98,22 @@ function App() {
           <div className="panel-heading">
             <FileText size={22} />
             <h2>Student Submission</h2>
+          </div>
+
+          <div className="google-box">
+            <div>
+              <strong>Google Docs access</strong>
+              <p>{googleConnectionMessage(googleStatus)}</p>
+            </div>
+            <button
+              className="secondary-button"
+              disabled={!googleStatus?.configured}
+              type="button"
+              onClick={handleConnectGoogle}
+            >
+              <Unplug size={17} />
+              {googleStatus?.connected ? "Reconnect" : "Connect Google"}
+            </button>
           </div>
 
           <label>
@@ -104,6 +157,13 @@ function App() {
       </section>
     </main>
   );
+}
+
+function googleConnectionMessage(status) {
+  if (!status) return "Checking connection...";
+  if (!status.configured) return "Add Google OAuth credentials in backend/.env.";
+  if (!status.connected) return "Ready to connect a Google account.";
+  return "Connected. You can generate a report from a real Google Doc URL.";
 }
 
 function EmptyReport() {
