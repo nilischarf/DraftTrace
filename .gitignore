@@ -1,0 +1,22 @@
+# Dependencies
+frontend/node_modules/
+backend/.venv/
+
+# Build outputs
+frontend/dist/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs and local OS files
+*.log
+.DS_Store
+
+# Local screenshots/artifacts
+drafttrace-screenshot.png
